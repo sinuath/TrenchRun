@@ -202,9 +202,6 @@ int checkCollision(bool player, int piecePos){
 					computerPieces[1][b] = 'x';
 					computerPieces[2][b] = 'x';
 					collide = b;
-					//cout<<endl<<"Player Move";
-					//cout<<endl<<"Player Piece: "<<playerPieces[0][piecePos]<<": "<<playerPieces[1][piecePos]<<", "<<playerPieces[2][piecePos];
-					//cout<<endl<<"Computer Piece: "<<computerPieces[0][b]<<": "<<computerPieces[1][b]<<", "<<computerPieces[2][b];
 			}
 		}
 	}else{
@@ -213,9 +210,6 @@ int checkCollision(bool player, int piecePos){
 					playerPieces[1][b] = 'x';
 					playerPieces[2][b] = 'x';
 					collide = b;
-					//cout<<endl<<"Computer Move";
-					//cout<<endl<<"Computer Piece: "<<computerPieces[0][piecePos]<<": "<<computerPieces[1][piecePos]<<", "<<computerPieces[2][piecePos];
-					//cout<<endl<<"Player Piece: "<<playerPieces[0][b]<<": "<<playerPieces[1][b]<<", "<<playerPieces[2][b];
 			}
 		}
 	}
@@ -473,11 +467,6 @@ void check4LegalMoves(bool player){
 	if(player){
 		numPlayerMoves = 0;
 	
-		//playerPieces [3][11];
-		//playerLegalMoves[4][MAXMOVES];
-		//
-		//numComputerMoves=0;
-		//numPlayerMoves=0;
 
 		for(int i=0;i<11;i++){ 
 			if((playerPieces[0][i]=='t')&&(playerPieces[1][i]!='x')){ // (x,x) Coordinates for a piece indicates it's dead now.
@@ -501,15 +490,6 @@ void check4LegalMoves(bool player){
 }
 
 void tieFighterLegalMoves(bool player, int gamePiece){
-	/*
-	 *
-	 *
-	int playerLegalMoves[4][MAXMOVES]; // First two Int Represent where the piece is, the second two represent possible moves
-	int computerLegalMoves[4][MAXMOVES];
-	int numComputerMoves=0;
-	int numPlayerMoves=0;
-	 *
-	 * */
 	int xCoordinate, yCoordinate;
 	if(player){
 
@@ -785,20 +765,7 @@ void tieFighterLegalMoves(bool player, int gamePiece){
 }
 
 void debugLegalMoves(){
-	//cout<<endl<<"Debugging Moves"<<endl;
-	/*
-	cout<<endl<<"Player Moves: "<<numPlayerMoves;
-	for(int i=0;i<numPlayerMoves;i++){
-		cout<<endl<<"move "<<i<<": "<<playerLegalMoves[0][i]<<playerLegalMoves[1][i]<<playerLegalMoves[2][i]<<playerLegalMoves[3][i];
-	}
-	
-	cout<<endl<<"Computer Moves: "<<numComputerMoves;
-	for(int i=0;i<numComputerMoves;i++){
-		cout<<endl<<"move "<<i<<": "<<computerLegalMoves[0][i]<<computerLegalMoves[1][i]<<computerLegalMoves[2][i]<<computerLegalMoves[3][i];
-	}
-	*/
 	listPlayerMoves();
-	//listComputerMoves();
 }
 
 void listComputerMoves(){
@@ -869,10 +836,8 @@ void xWingLegalMoves(bool player, int gamePiece){
 
 
 		if(maxForwardLeft != yCoordinate){
-			//cout<<endl<<"Possible Vertical Movements: X: "<<xCoordinate<<" Y: "<<maxVertical;
 			tempX = maxLeft;
 			for(int i=maxForwardLeft;i<yCoordinate;i++){
-				//cout<<endl<<"Coordinates in between: X: "<<xCoordinate<<" Y: "<<i;
 				playerLegalMoves[0][numPlayerMoves] = xCoordinate;
 				playerLegalMoves[1][numPlayerMoves] = yCoordinate;
 				playerLegalMoves[2][numPlayerMoves] = tempX;
@@ -889,40 +854,30 @@ void xWingLegalMoves(bool player, int gamePiece){
 		bool canGoForwardRight=true;
 		int maxForwardRight=yCoordinate;
 		int maxRight=xCoordinate;
-		//cout<<endl<<"Starting Points: ("<<xCoordinate<<", "<<yCoordinate<<") ";
 		
 		tempX=xCoordinate;
 		for(int i=yCoordinate-1;i>=-1;i--){
 			tempX++;
-			//cout<<endl<<"("<<tempX<<","<<i<<")";
 			if(((i<0)||(tempX>6)) && (canGoForwardRight)){
 				maxForwardRight= i+1;
 				maxRight=tempX-1;
 				canGoForwardRight=false;
-				//cout<<endl<<"Off Board";
-				//cout<<endl<<"X: "<<maxRight<<", y: "<<maxForwardRight;
 			}else if(gameBoard[tempX][i]!='-'){
 				if(canGoForwardRight){
 					canGoForwardRight=false;
 					if((gameBoard[tempX][i]=='X') || (gameBoard[tempX][i]=='T')){
 						maxForwardRight=i;
 						maxRight=tempX;
-						//cout<<endl<<"Hit X or T";
-						//cout<<endl<<"X: "<<tempX<<", y: "<<i;
 					}else{
 						maxForwardRight= i + 1;
 						maxRight=tempX-1;
-						//cout<<endl<<"Hit an indesctuctible";
-						//cout<<endl<<"X: "<<maxRight<<", y: "<<maxForwardRight;
 					}
 				}
 			}
 		}
 		if(maxForwardRight != yCoordinate){
-			//cout<<endl<<"Possible Vertical Movements: X: "<<xCoordinate<<" Y: "<<maxVertical;
 			tempX = maxRight;
 			for(int i=maxForwardRight;i<yCoordinate;i++){
-				//cout<<endl<<"Coordinates in between: X: "<<xCoordinate<<" Y: "<<i;
 				playerLegalMoves[0][numPlayerMoves] = xCoordinate;
 				playerLegalMoves[1][numPlayerMoves] = yCoordinate;
 				playerLegalMoves[2][numPlayerMoves] = tempX;
@@ -1015,26 +970,20 @@ void xWingLegalMoves(bool player, int gamePiece){
 		bool canGoForwardLeft=true;
 		int maxForwardLeft=yCoordinate;
 		int maxLeft=xCoordinate;
-		//cout<<endl<<"Starting Points: ("<<xCoordinate<<", "<<yCoordinate<<") ";
 		
 		int tempX=xCoordinate;
 		for(int i=yCoordinate+1;i<=7;i++){ // THIS IS WHERE YOU ARE IN FIXING STUFF
 			tempX++;
-			//cout<<endl<<"("<<tempX<<","<<i<<")";
 			if(((i>6)||(tempX>6)) && (canGoForwardLeft)){
 				maxForwardLeft= i-1;
 				maxLeft=tempX-1;
 				canGoForwardLeft=false;
-				//cout<<endl<<"Off Board"; // DEBUGGING
-				//cout<<endl<<"X: "<<maxLeft<<", y: "<<maxForwardLeft; // DEBUGGING
 			}else if(gameBoard[tempX][i]!='-'){
 				if(canGoForwardLeft){
 					canGoForwardLeft=false;
 					if((gameBoard[tempX][i]=='x') || (gameBoard[tempX][i]=='t')){
 						maxForwardLeft=i;
 						maxLeft=tempX;
-						//cout<<endl<<"Hit X or T";
-						//cout<<endl<<"X: "<<tempX<<", y: "<<i;
 					}else{
 						maxForwardLeft= i - 1;
 						maxLeft=tempX-1;
@@ -1045,10 +994,8 @@ void xWingLegalMoves(bool player, int gamePiece){
 			}
 		}
 		if(maxForwardLeft != yCoordinate){
-			//cout<<endl<<"Possible Vertical Movements: X: "<<xCoordinate<<" Y: "<<maxVertical;
 			tempX = maxLeft;
 			for(int i=maxForwardLeft;i>yCoordinate;i--){
-				//cout<<endl<<"Coordinates in between: X: "<<xCoordinate<<" Y: "<<i;
 				computerLegalMoves[0][numComputerMoves] = xCoordinate;
 				computerLegalMoves[1][numComputerMoves] = yCoordinate;
 				computerLegalMoves[2][numComputerMoves] = tempX;
@@ -1065,42 +1012,31 @@ void xWingLegalMoves(bool player, int gamePiece){
 		bool canGoForwardRight=true;
 		int maxForwardRight=yCoordinate;
 		int maxRight=xCoordinate;
-		//cout<<endl<<"Starting Points: ("<<xCoordinate<<", "<<yCoordinate<<") "; //DEBUG
 		
 		tempX=xCoordinate;
 		for(int i=yCoordinate+1;i<=7;i++){
 			tempX--;
-			//cout<<endl<<"("<<tempX<<","<<i<<")"; // DEBUG
 			if(((i>6)||(tempX<0)) && (canGoForwardRight)){
 				maxForwardRight= i-1;
 				maxRight=tempX+1;
 				canGoForwardRight=false;
-				//cout<<endl<<"Off Board"; // DEBUG
-				//cout<<endl<<"X: "<<maxRight<<", y: "<<maxForwardRight; //DEBUG
 			}else if(gameBoard[tempX][i]!='-'){
 				if(canGoForwardRight){
 					canGoForwardRight=false;
 					if((gameBoard[tempX][i]=='x') || (gameBoard[tempX][i]=='t')){
 						maxForwardRight=i;
 						maxRight=tempX;
-						//cout<<endl<<"Hit X or T"; //Debug
-						//cout<<endl<<"X: "<<tempX<<", y: "<<i; //Debug
 					}else{
 						maxForwardRight= i - 1;
 						maxRight=tempX+1;
-						//cout<<endl<<"Hit an indesctuctible"; //Debug
-						//cout<<endl<<"X: "<<maxRight<<", y: "<<maxForwardRight; //Debug
 					}
 				}
 			}
 		}
 		if(maxForwardRight != yCoordinate){
-			//cout<<endl<<"Possible Vertical Movements: X: "<<xCoordinate<<" Y: "<<maxVertical;
 			tempX = maxRight;
 			for(int i=maxForwardRight;i>yCoordinate;i--){
-				//cout<<endl<<"Coordinates in between: X: "<<xCoordinate<<" Y: "<<i;
 
-				//cout<<endl<<"Move Entry:  ("<<xCoordinate<<", "<<yCoordinate<<") X: "<<tempX<<", y: "<<i; //Debug
 				computerLegalMoves[0][numComputerMoves] = xCoordinate;
 				computerLegalMoves[1][numComputerMoves] = yCoordinate;
 				computerLegalMoves[2][numComputerMoves] = tempX;
@@ -1122,11 +1058,9 @@ void xWingLegalMoves(bool player, int gamePiece){
 		int maxBackwardRightX=xCoordinate;
 
 
-			//cout<<"Backward checking";
 		// Possible Forward Moves for Tie Fighter
 		for(int i=yCoordinate-1;i>=0;i--){
 			maxBackwardRightX--;
-			//cout<<endl<<"( "<<maxBackwardRightX<<", "<<i<<" )";
 			
 			if((gameBoard[maxBackwardRightX][i]!='-')&&(maxBackwardRightX >= 0)){
 				if(canGoBackward){
@@ -1187,9 +1121,6 @@ void xWingLegalMoves(bool player, int gamePiece){
  * */
 void initGame() {
 	
-//playerPieces [3][11];
-//computerPieces [3][11];
-//
 	winner = "Game Not Over Yet";
 	// In Retrospect I have no idea why I didn't make these classes.
 	// Of course the fringe benefit is i'm not wasting resouces on class creation.
@@ -1296,8 +1227,6 @@ void initGame() {
 	playerPieces [2][10] = '6'; // Y
 	
 
-	//debugPiecesArrays();
-	//cout <<endl<< "Actual Board";
 }
 
 
@@ -1393,8 +1322,6 @@ void displayGameBoard() {
 		}
 		leftAxis--;
 	}
-	//printf("\n %9s", );
-	//cout << endl << "      A  B  C  D  E  F  G";
 	cout << endl << "   ";
 	for (int b = 0; b < 21; b++) {
 		cout << "-";
