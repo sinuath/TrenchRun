@@ -31,8 +31,6 @@ void textcolor(int attr, int fg, int bg);
 
 void computerMove();
 void initGame();
-//void initGame(char gameBoard[][7]);
-//void displayGameBoard(char gameBoard[][7]);
 void displayGameBoard();
 void playerMove();
 bool gameOver();
@@ -51,15 +49,16 @@ int max(int depth);
 int evaluate();
 void listPlayerMoves();
 void listComputerMoves();
-void moveGamePiece(bool player);
-int findPiece(bool player);
+void moveGamePiece(bool player, int movePiece[]);
+void unMoveGamePiece(bool player, int movePiece[]);
+//int findPiece(bool player);
+int findPiece(bool player, int pieceX, int pieceY);
 int checkCollision(bool player, int piecePos);
 
 bool gameOverNow = false;
-int movePiece[4]; // This is the array that holds the next move, I'm making it global because i'm lazy and Tired at 1300+ lines of code anyway.
+//int movePiece[4]; // This is the array that holds the next move, I'm making it global because i'm lazy and Tired at 1300+ lines of code anyway.
 char userMove[4];
 char gameBoard[7][7];
-//string gameBoard[7][7];
 char playerPieces [3][11]; // Piece Type, X Coordinate, Y Coordinate ... For Each Row 11 pieces. If a piece is dead I'll change the coordinates to (x,x)
 char computerPieces [3][11];
 int playerLegalMoves[4][MAXMOVES]; // First two Int Represent where the piece is, the second two represent possible moves
@@ -92,10 +91,8 @@ int main()
 
 	while(!gameOver()){
 		displayGameBoard();
-		//check4LegalMoves(true);// true = player
 		check4LegalMoves(true);// false = computer
 		debugLegalMoves();
-		//gameOverNow = true;
 		
 		playerMove(); // This should be uncommented out, it's important but leaving it out for debugging.
 		if(!gameOver()){
@@ -118,6 +115,7 @@ int main()
 }
 
 void playerMove(){
+	int movePiece[4];
 	string userInput="zzzz";// I want to keep the array from accessing invalid memmory
 	do{
 		if(!validInput){
@@ -141,13 +139,8 @@ void playerMove(){
 			cout<<movePiece[i];
 		}
 		if(validInput){
-			moveGamePiece(true); // Player Move
+			moveGamePiece(true, movePiece); // Player Move
 		}
-		/*
-		if(userInput[0] == 'a'){ // Right Now this is only Temporary for Testing
-			gameOverNow = true;
-		}
-		*/
 	}while(!validInput);
 }
 
@@ -157,10 +150,10 @@ void playerMove(){
  *      Move Game Piece that is currently saved in movePiece[4] 0,1 = current location 2,3 Destination
  *
  */
-void moveGamePiece(bool player){
+void moveGamePiece(bool player, int movePiece[]){
 	cout<<endl<<"Move Piece!";
 	int piecePos;
-	piecePos = findPiece(player);
+	piecePos = findPiece(player, movePiece[0], movePiece[1]);
 	if(player){
 		if(piecePos == 100){
 			cout<<endl<<"No Piece in that location";
@@ -189,6 +182,43 @@ void moveGamePiece(bool player){
 
 }
 /***
+
+ Reverse Game Piece Move
+
+*/
+void unMoveGamePiece(bool player, int movePiece[]){
+	cout<<endl<<"Move Piece!";
+	int piecePos;
+	//piecePos = findPiece(player);
+	piecePos = findPiece(player, movePiece[2], movePiece[3]); // destination of last move
+	if(player){
+		if(piecePos == 100){
+			cout<<endl<<"No Piece in that location";
+			validInput = false;
+		}else{
+			playerPieces[1][piecePos] ='0' + movePiece[2];
+			playerPieces[2][piecePos] ='0' + movePiece[3];
+			if(checkCollision(player, piecePos)<15){
+				cout << endl<<"Player Capture";
+			}
+
+		}
+	}else{ // Computer
+		if(piecePos == 100){
+			cout<<endl<<"No Piece in that location";
+			validInput = false;
+		}else{
+			computerPieces[1][piecePos] ='0' + movePiece[2];
+			computerPieces[2][piecePos] ='0' + movePiece[3];
+			if(checkCollision(player, piecePos)<15){
+				cout << endl<<"Computer Capture";
+			}
+
+		}
+	}
+}
+
+/***
  *
  *
  *	Takes Piece Position and Kills any piec that current piece moves to.
@@ -213,7 +243,6 @@ int checkCollision(bool player, int piecePos){
 			}
 		}
 	}
-	//debugPiecesArrays();
 	return collide;
 }
 
@@ -224,11 +253,13 @@ int checkCollision(bool player, int piecePos){
  *		For some brilliant reason I used a char array so finding the index is a bit more involved.
  *
  **/
-int findPiece(bool player){
+int findPiece(bool player, int pieceX, int pieceY){
 	char tempXCoord, tempYCoord;
 	int tempPlace = 100;
-	tempXCoord = '0' + movePiece[0];
-	tempYCoord = '0' + movePiece[1];
+	//tempXCoord = '0' + movePiece[0];
+	//tempYCoord = '0' + movePiece[1];
+	tempXCoord = '0' + pieceX;
+	tempYCoord = '0' + pieceY;
 
 	if(player){
 		for(int i=0;i<11;i++){
@@ -252,12 +283,39 @@ int findPiece(bool player){
 
 void computerMove(){
 	cout<<endl<< "Computer Move";
+	int movePiece[4];
 	int computerMove=rand()%numComputerMoves; // MY AI
 	movePiece[0] = computerLegalMoves[0][computerMove]; // Source X coordinate
 	movePiece[1] = computerLegalMoves[1][computerMove]; // Source Y Coordinate
 	movePiece[2] = computerLegalMoves[2][computerMove]; // Destination X Coordinate
 	movePiece[3] = computerLegalMoves[3][computerMove]; // Destination Y Coordinate
+	moveGamePiece(false, movePiece); // false = computer; true = player
+	/*
+	int best=-20000,depth=0,score,computerMove;
+	char source, destination;
+	for(int i=0;i<numComputerMoves;i++){
+		movePiece[0] = computerLegalMoves[0][i]; // Source X coordinate
+		movePiece[1] = computerLegalMoves[1][i]; // Source Y Coordinate
+		movePiece[2] = computerLegalMoves[2][i]; // Destination X Coordinate
+		movePiece[3] = computerLegalMoves[3][i]; // Destination Y Coordinate
+		moveGamePiece(false); // false = computer; true = player
+ 		score = min(depth+1);
+		if(score > best){
+			best = score;
+			computerMove = i; // Save best move
+		}
+		unMoveGamePiece(false); // false = computer; true = player
+		    // Undo Move
+
+	
+	}
+	movePiece[0] = computerLegalMoves[0][computerMove]; // Source X coordinate
+	movePiece[1] = computerLegalMoves[1][computerMove]; // Source Y Coordinate
+	movePiece[2] = computerLegalMoves[2][computerMove]; // Destination X Coordinate
+	movePiece[3] = computerLegalMoves[3][computerMove]; // Destination Y Coordinate
 	moveGamePiece(false); // false = computer; true = player
+	   */
+
 }
 	// The following is Tic Tac Toe Code Ripped for use as a Base for my Min Max Functions.
 /*
