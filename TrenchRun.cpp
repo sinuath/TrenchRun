@@ -50,7 +50,7 @@ int evaluate();
 void listPlayerMoves();
 void listComputerMoves();
 int moveGamePiece(bool player, int movePiece[]);
-void unMoveGamePiece(bool player, int movePiece[]);
+void unMoveGamePiece(int collision, int movePiece[]);
 int findPiece(bool player, int pieceX, int pieceY);
 int checkCollision(bool player, int piecePos);
 
@@ -162,7 +162,7 @@ int moveGamePiece(bool player, int movePiece[]){
 	int piecePos;
 	int collision=100;
 
-	piecePos = findPiece(player, movePiece[0], movePiece[1]);
+	piecePos = findPiece(player, movePiece[0], movePiece[1]); // piece's current position
 	if(player){
 		if(piecePos == 100){
 			cout<<endl<<"No Piece in that location";
@@ -199,33 +199,27 @@ int moveGamePiece(bool player, int movePiece[]){
  Reverse Game Piece Move
 
 */
-void unMoveGamePiece(bool player, int movePiece[]){
+void unMoveGamePiece(int collision, int movePiece[]){
 	cout<<endl<<"Move Piece!";
 	int piecePos;
-	piecePos = findPiece(player, movePiece[2], movePiece[3]); // destination of last move
-	if(player){
-		if(piecePos == 100){
-			cout<<endl<<"No Piece in that location";
-			validInput = false;
-		}else{
-			playerPieces[1][piecePos] ='0' + movePiece[0];
-			playerPieces[2][piecePos] ='0' + movePiece[1];
+	piecePos = findPiece(false, movePiece[2], movePiece[3]); // destination of last move
 			
 
-		}
-	}else{ // Computer
+	 // Computer
 		if(piecePos == 100){
 			cout<<endl<<"No Piece in that location";
 			validInput = false;
 		}else{
 			computerPieces[1][piecePos] ='0' + movePiece[0];
 			computerPieces[2][piecePos] ='0' + movePiece[1];
-			if(checkCollision(player, piecePos)<15){
+			if(collision<15){
+				//Return Human piece to the board.
 				cout << endl<<"Computer Capture";
+				playerPieces[3][collision] = ' ';
 			}
 
 		}
-	}
+	
 }
 
 /***
@@ -302,8 +296,10 @@ void computerMove(){
 	}
 	/*
 	int best=-20000,depth=0,score,computerMove;
+	int collision = 100;
 	char source, destination;
 	for(int i=0;i<numComputerMoves;i++){
+		collision = 100;
 		movePiece[0] = computerLegalMoves[0][i]; // Source X coordinate
 		movePiece[1] = computerLegalMoves[1][i]; // Source Y Coordinate
 		movePiece[2] = computerLegalMoves[2][i]; // Destination X Coordinate
@@ -314,7 +310,7 @@ void computerMove(){
 			best = score;
 			computerMove = i; // Save best move
 		}
-		unMoveGamePiece(false, movePiece); // false = computer; true = player
+		unMoveGamePiece(collision, movePiece); // collision = which player pieces was knocked out
 		    // Undo Move
 
 	
@@ -1286,6 +1282,11 @@ void initGame() {
 	playerPieces [0][10] = 't';
 	playerPieces [1][10] = '5'; // X
 	playerPieces [2][10] = '6'; // Y
+	
+	for(int i=0;i<11;i++){ // Every piece is Alive, when they die switch to 'x'
+		playerPieces[3][i] = ' ';
+		computerPieces[3][i] = ' ';
+	}
 	
 
 }
