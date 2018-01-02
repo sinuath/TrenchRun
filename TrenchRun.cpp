@@ -129,17 +129,31 @@ void playerMove(){
 		cin >> userInput;
 		cout <<endl<< "User Input: "<<userInput<<endl;
 
-		validInput = true;
+		validInput = false;
 
 
+		//Converts user input to the boards numerical array.
 		cout <<endl<< "User Code Conversion: ";
 		for(int i=0;i<4;i++){
 			movePiece[i]=charToCoordinate(userInput[i]);
-			if(movePiece[i] == -1){
-				validInput = false;
-			}
 			cout<<movePiece[i];
 		}
+		
+		// Check move against list of legal moves for playerMove
+		for(int legalMove=0; legalMove < numPlayerMoves; legalMove++){
+				if(movePiece[0]==playerLegalMoves[0][legalMove] &
+					 movePiece[1]==playerLegalMoves[1][legalMove] &
+					 movePiece[2]==playerLegalMoves[2][legalMove] &
+					 movePiece[3]==playerLegalMoves[3][legalMove]){
+							cout<<"\nPlayer move: "<<coordinateToXChar(playerLegalMoves[0][legalMove]);
+							cout<<coordinateToYChar(playerLegalMoves[1][legalMove]);
+							cout<<coordinateToXChar(playerLegalMoves[2][legalMove]);
+							cout<<coordinateToYChar(playerLegalMoves[3][legalMove]);
+					validInput = true;
+					
+				}
+		}
+		
 		if(validInput){
 			moveGamePiece(true); // Player Move
 		}
@@ -158,7 +172,7 @@ void playerMove(){
  *
  */
 void moveGamePiece(bool player){
-	cout<<endl<<"Move Piece!";
+	//cout<<endl<<"Move Piece!";
 	int piecePos;
 	piecePos = findPiece(player);
 	if(player){
@@ -168,9 +182,11 @@ void moveGamePiece(bool player){
 		}else{
 			playerPieces[1][piecePos] ='0' + movePiece[2];
 			playerPieces[2][piecePos] ='0' + movePiece[3];
+			cout<<endl<<"Player Move: "<<coordinateToXChar(movePiece[0])<<", "<<coordinateToYChar(movePiece[1])<<" to: "<<coordinateToXChar(movePiece[2])<<", "<<coordinateToYChar(movePiece[3]);
 			if(checkCollision(player, piecePos)<15){
-				cout << endl<<"Player Capture";
+				cout << endl<<"Player Capture:";
 			}
+			
 
 		}
 	}else{ // Computer
@@ -180,6 +196,7 @@ void moveGamePiece(bool player){
 		}else{
 			computerPieces[1][piecePos] ='0' + movePiece[2];
 			computerPieces[2][piecePos] ='0' + movePiece[3];
+			cout<<endl<<"Computer Move: "<<coordinateToXChar(movePiece[0])<<", "<<coordinateToYChar(movePiece[1])<<" to: "<<coordinateToXChar(movePiece[2])<<", "<<coordinateToYChar(movePiece[3]);
 			if(checkCollision(player, piecePos)<15){
 				cout << endl<<"Computer Capture";
 			}
@@ -191,7 +208,7 @@ void moveGamePiece(bool player){
 /***
  *
  *
- *	Takes Piece Position and Kills any piec that current piece moves to.
+ *	Takes Piece Position and Kills any piece that current piece moves to.
  *
  */
 int checkCollision(bool player, int piecePos){
