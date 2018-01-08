@@ -32,8 +32,6 @@ void textcolor(int attr, int fg, int bg);
 
 void computerMove();
 void initGame();
-//void initGame(char gameBoard[][7]);
-//void displayGameBoard(char gameBoard[][7]);
 void displayGameBoard();
 void playerMove();
 bool gameOver();
@@ -53,7 +51,7 @@ int evaluate();
 void listPlayerMoves();
 void listComputerMoves();
 void displayHistoryTable();
-void moveGamePiece(bool player);
+int moveGamePiece(bool player, int move[]);// Return integer of killed piece
 int findPiece(bool player);
 int checkCollision(bool player, int piecePos);
 
@@ -82,7 +80,7 @@ int main()
 	cout << "\nWelcome To Trench Run, My Name is ";
 	textcolor(BRIGHT,GREEN,BLACK);
 	cout << "Orpheus";
-	textcolor(RESET,WHITE,BLACK);
+	textcolor(BRIGHT,WHITE,BLACK);
 	cout << " and I will be your opponent.\n";
 	
 	cout<<"\n Would you Like to Move First or Second? \n Please Respond with 1 or 2: "; // This works, leaving it out during testing
@@ -143,7 +141,7 @@ void playerMove(){
 			movePiece[i]=charToCoordinate(userInput[i]);
 			cout<<movePiece[i];
 		}
-		/*
+		
 		// Check move against list of legal moves for playerMove
 		for(int legalMove=0; legalMove < numPlayerMoves; legalMove++){
 				if(movePiece[0]==playerLegalMoves[0][legalMove] &
@@ -158,11 +156,9 @@ void playerMove(){
 					
 				}
 		}
-		*/
-		validInput = true;// Delete this line when done testing
-		//cout<<endl<<"Valid Input!";
+		
 		if(validInput){
-			moveGamePiece(true); // Player Move
+			moveGamePiece(true, movePiece); // Player Move
 			historyTable[4][historyIndex] = 1; // 1 = player
 			for(int i=0;i<4;i++){
 				historyTable[i][historyIndex]=movePiece[i];
@@ -170,16 +166,16 @@ void playerMove(){
 			}
 			historyIndex++;
 		}
-		
+		/*
 		if(userInput[0] == 'q'){ // Right Now this is only Temporary for Testing
 			gameOverNow = true;
 		}
-		
+		*/
 	}while(!validInput);
 }
 
 void displayHistoryTable(){
-	cout<<"--- History Table ---";
+	cout<<endl<<"--- History Table ---";
 	for(int i=0;i<historyIndex;i++){
 		cout<<endl<<"Move: ";
 		cout<<coordinateToXChar(historyTable[0][i]);
@@ -196,6 +192,7 @@ void displayHistoryTable(){
 			cout<<" Player";
 		}
 	}
+	cout<<endl;
 	
 }
 
@@ -205,9 +202,11 @@ void displayHistoryTable(){
  *      Move Game Piece that is currently saved in movePiece[4] 0,1 = current location 2,3 Destination
  *
  */
-void moveGamePiece(bool player){
+int moveGamePiece(bool player, int move[]){ // Need to add undo move ADD: location of pieces, & move. In undo function add an unkill piece move.
 	//cout<<endl<<"Move Piece!";
 	int piecePos;
+	int deadPiece = 999;
+
 	piecePos = findPiece(player);
 	if(player){
 		if(piecePos == 100){
@@ -217,8 +216,9 @@ void moveGamePiece(bool player){
 			playerPieces[1][piecePos] ='0' + movePiece[2];
 			playerPieces[2][piecePos] ='0' + movePiece[3];
 			cout<<endl<<"Player Move: "<<coordinateToXChar(movePiece[0])<<", "<<coordinateToYChar(movePiece[1])<<" to: "<<coordinateToXChar(movePiece[2])<<", "<<coordinateToYChar(movePiece[3]);
-			if(checkCollision(player, piecePos)<15){
-				cout << endl<<"Player Capture:";
+			deadPiece = checkCollision(player, piecePos);
+			if(deadPiece<15){
+				cout << endl<<"Player Capture: "<<deadPiece;
 			}
 			
 
@@ -231,12 +231,15 @@ void moveGamePiece(bool player){
 			computerPieces[1][piecePos] ='0' + movePiece[2];
 			computerPieces[2][piecePos] ='0' + movePiece[3];
 			cout<<endl<<"Computer Move: "<<coordinateToXChar(movePiece[0])<<", "<<coordinateToYChar(movePiece[1])<<" to: "<<coordinateToXChar(movePiece[2])<<", "<<coordinateToYChar(movePiece[3]);
-			if(checkCollision(player, piecePos)<15){
-				cout << endl<<"Computer Capture";
+			deadPiece = checkCollision(player, piecePos);
+			if(deadPiece<15){
+				cout << endl<<"Computer Capture: "<<deadPiece;
 			}
 
 		}
 	}
+
+	return deadPiece;
 
 }
 /***
@@ -246,16 +249,13 @@ void moveGamePiece(bool player){
  *
  */
 int checkCollision(bool player, int piecePos){
-	int collide = 20;
+	int collide = 999;
 	if(player){
 		for(int b=0;b<=10;b++){
 			if((playerPieces[1][piecePos]==computerPieces[1][b])&&(playerPieces[2][piecePos]==computerPieces[2][b])){
 					computerPieces[1][b] = 'x';
 					computerPieces[2][b] = 'x';
 					collide = b;
-					//cout<<endl<<"Player Move";
-					//cout<<endl<<"Player Piece: "<<playerPieces[0][piecePos]<<": "<<playerPieces[1][piecePos]<<", "<<playerPieces[2][piecePos];
-					//cout<<endl<<"Computer Piece: "<<computerPieces[0][b]<<": "<<computerPieces[1][b]<<", "<<computerPieces[2][b];
 			}
 		}
 	}else{
@@ -264,9 +264,6 @@ int checkCollision(bool player, int piecePos){
 					playerPieces[1][b] = 'x';
 					playerPieces[2][b] = 'x';
 					collide = b;
-					//cout<<endl<<"Computer Move";
-					//cout<<endl<<"Computer Piece: "<<computerPieces[0][piecePos]<<": "<<computerPieces[1][piecePos]<<", "<<computerPieces[2][piecePos];
-					//cout<<endl<<"Player Piece: "<<playerPieces[0][b]<<": "<<playerPieces[1][b]<<", "<<playerPieces[2][b];
 			}
 		}
 	}
@@ -314,7 +311,7 @@ void computerMove(){
 	movePiece[1] = computerLegalMoves[1][computerMove]; // Source Y Coordinate
 	movePiece[2] = computerLegalMoves[2][computerMove]; // Destination X Coordinate
 	movePiece[3] = computerLegalMoves[3][computerMove]; // Destination Y Coordinate
-	moveGamePiece(false); // false = computer; true = player // In retrospect this was stupid. Which i had done things OO
+	moveGamePiece(false, movePiece); // false = computer; true = player // In retrospect this was stupid. Which i had done things OO
 	
 	//History Table
 	historyTable[4][historyIndex] = 0; // 0 = Computer
@@ -329,19 +326,25 @@ void computerMove(){
 void makemove()
 { 
 	int best=-20000,depth=0,score,mi,mj;
+	
+	// Iterate through every possible current move on board
+	
 	for (int i=0; i<3; i++)
 	{ 
 		for (int j=0; j<3; j++)
 		{ 
-			if (b[i][j]==0)
+		
+		
+			if (b[i][j]==0) // tic tac toe for free space
 			{ 
 				b[i][j]=1; // make move on board
-				score = min(depth+1);
-				if (score > best) { mi=i; mj=j; best=score; }
+				score = min(depth+1); // have min take it's move and return score
+				
+				if (score > best) { mi=i; mj=j; best=score; } // if score better, save move
 					b[i][j]=0; // undo move
 			} } }
 	cout << "my move is " << mi << " " << mj << endl;
-	b[mi][mj]=1;
+	b[mi][mj]=1; // set actual move
 }
 
 int min(int depth)
@@ -1434,21 +1437,21 @@ void displayGameBoard() {
 		for (int a = 0; a < 7; a++) {
 			
 			if((gameBoard[a][b] == 'X') || (gameBoard[a][b] == 'T') || (gameBoard[a][b] == '*')){
-				textcolor(DIM,RED,BLACK);
+				textcolor(BRIGHT,RED,BLACK);
 				printf("%-3c", gameBoard[a][b]);
 			}else if((gameBoard[a][b] == 'x') || (gameBoard[a][b] == 't') || (gameBoard[a][b] == '@')){
 				textcolor(BRIGHT,BLUE,BLACK);
 				printf("%-3c", gameBoard[a][b]);
 			}else if((gameBoard[a][b] == '~') || (gameBoard[a][b] == '+') ){
-				textcolor(DIM,YELLOW,BLACK);
+				textcolor(BRIGHT,YELLOW,BLACK);
 				printf("%-3c", gameBoard[a][b]);
 			}else{
-				textcolor(DIM,WHITE,BLACK);
+				textcolor(BRIGHT,WHITE,BLACK);
 				printf("%-3c", gameBoard[a][b]);
 			}
 			
 			//cout<<"X: "<<a<<", Y: "<<b<<endl;
-				textcolor(RESET,WHITE,BLACK);
+				textcolor(BRIGHT,WHITE,BLACK);
 		}
 		leftAxis--;
 	}
