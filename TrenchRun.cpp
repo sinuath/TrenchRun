@@ -28,6 +28,8 @@ using namespace std;
 #define CYAN            6
 #define WHITE           7
 #define MAXMOVES        80
+#define COMPUTER        0 // False = Computer
+#define HUMAN           1 // True = Human
 void textcolor(int attr, int fg, int bg);
 
 void computerMove();
@@ -52,6 +54,7 @@ void listPlayerMoves();
 void listComputerMoves();
 void displayHistoryTable();
 int moveGamePiece(bool player, int move[]);// Return integer of killed piece
+void unMoveGamePiece(bool player, int move[], int deadPiece);// Return integer of killed piece
 int findPiece(bool player);
 int checkCollision(bool player, int piecePos);
 
@@ -60,8 +63,8 @@ int movePiece[4]; // This is the array that holds the next move, I'm making it g
 char userMove[4];
 char gameBoard[7][7];
 //string gameBoard[7][7];
-char playerPieces [3][11]; // Piece Type, X Coordinate, Y Coordinate ... For Each Row 11 pieces. If a piece is dead I'll change the coordinates to (x,x)
-char computerPieces [3][11];
+char playerPieces [4][11]; // Piece Type, X Coordinate, Y Coordinate, Dead ... For Each Row 11 pieces. If a piece is dead I'll change the coordinates to (x,x)
+char computerPieces [4][11]; 
 int playerLegalMoves[4][MAXMOVES]; // First two Int Represent where the piece is, the second two represent possible moves
 int computerLegalMoves[4][MAXMOVES];
 int historyTable[5][300]; // Tracks every move of the game; [0][move] = Player; 0 = computer; 1 = player
@@ -87,7 +90,7 @@ int main()
 	int playerOrder;
 	cin>>playerOrder;
 	if(playerOrder==2){
-		check4LegalMoves(false);// false = computer
+		check4LegalMoves(COMPUTER);// false = computer
 		computerMove();
 	}
 	
@@ -95,13 +98,13 @@ int main()
 	while(!gameOver()){
 		displayGameBoard();
 		//check4LegalMoves(true);// true = player
-		check4LegalMoves(true);// false = computer
+		check4LegalMoves(HUMAN);// false = computer
 		debugLegalMoves();
 		//gameOverNow = true;
 		
 		playerMove(); // This should be uncommented out, it's important but leaving it out for debugging.
 		if(!gameOver()){
-			check4LegalMoves(false);// false = computer
+			check4LegalMoves(COMPUTER);// false = computer
 			computerMove();
 		}
 		
@@ -132,7 +135,7 @@ void playerMove(){
 		cin >> userInput;
 		cout <<endl<< "User Input: "<<userInput<<endl;
 
-		validInput = false;
+		validInput = false; // Keeps us in the loop if user enters bad data
 
 
 		//Converts user input to the boards numerical array.
@@ -148,7 +151,8 @@ void playerMove(){
 					 movePiece[1]==playerLegalMoves[1][legalMove] &
 					 movePiece[2]==playerLegalMoves[2][legalMove] &
 					 movePiece[3]==playerLegalMoves[3][legalMove]){
-							cout<<"\nPlayer move: "<<coordinateToXChar(playerLegalMoves[0][legalMove]);
+							cout<<"\nPlayer move: ";
+							cout<<coordinateToXChar(playerLegalMoves[0][legalMove]);
 							cout<<coordinateToYChar(playerLegalMoves[1][legalMove]);
 							cout<<coordinateToXChar(playerLegalMoves[2][legalMove]);
 							cout<<coordinateToYChar(playerLegalMoves[3][legalMove]);
@@ -158,7 +162,7 @@ void playerMove(){
 		}
 		
 		if(validInput){
-			moveGamePiece(true, movePiece); // Player Move
+			moveGamePiece(HUMAN, movePiece); // Player Move
 			historyTable[4][historyIndex] = 1; // 1 = player
 			for(int i=0;i<4;i++){
 				historyTable[i][historyIndex]=movePiece[i];
@@ -196,10 +200,12 @@ void displayHistoryTable(){
 	
 }
 
+void unMoveGamePiece(bool player, int move[], int deadPiece){} // Code Stub :P
+
 /***
  *
  *
- *      Move Game Piece that is currently saved in movePiece[4] 0,1 = current location 2,3 Destination
+ *      Move Game Piece that is currently saved in movePiece[4] <0,1> = current location; <2,3> = Destination
  *
  */
 int moveGamePiece(bool player, int move[]){ // Need to add undo move ADD: location of pieces, & move. In undo function add an unkill piece move.
@@ -253,16 +259,18 @@ int checkCollision(bool player, int piecePos){
 	if(player){
 		for(int b=0;b<=10;b++){
 			if((playerPieces[1][piecePos]==computerPieces[1][b])&&(playerPieces[2][piecePos]==computerPieces[2][b])){
-					computerPieces[1][b] = 'x';
-					computerPieces[2][b] = 'x';
+				//	computerPieces[1][b] = 'x';
+				//	computerPieces[2][b] = 'x';
+					computerPieces[3][b] = 'x';
 					collide = b;
 			}
 		}
 	}else{
 		for(int b=0;b<=10;b++){
 			if((playerPieces[1][b]==computerPieces[1][piecePos])&&(playerPieces[2][b]==computerPieces[2][piecePos])){
-					playerPieces[1][b] = 'x';
-					playerPieces[2][b] = 'x';
+				//	playerPieces[1][b] = 'x';
+				//	playerPieces[2][b] = 'x';
+					playerPieces[3][b] = 'x';
 					collide = b;
 			}
 		}
@@ -311,7 +319,7 @@ void computerMove(){
 	movePiece[1] = computerLegalMoves[1][computerMove]; // Source Y Coordinate
 	movePiece[2] = computerLegalMoves[2][computerMove]; // Destination X Coordinate
 	movePiece[3] = computerLegalMoves[3][computerMove]; // Destination Y Coordinate
-	moveGamePiece(false, movePiece); // false = computer; true = player // In retrospect this was stupid. Which i had done things OO
+	moveGamePiece(COMPUTER, movePiece); // false = computer; true = player // In retrospect this was stupid. Wish i had done things OO
 	
 	//History Table
 	historyTable[4][historyIndex] = 0; // 0 = Computer
@@ -519,10 +527,10 @@ int charToCoordinate(char character){
 }
 
 bool gameOver(){
-	if(playerPieces[1][5]=='x'){
+	if(playerPieces[3][5]=='x'){
 		gameOverNow=true;
 		winner = "Orpheus";
-	}else if(computerPieces[1][5]=='x'){
+	}else if(computerPieces[3][5]=='x'){
 		gameOverNow=true;
 		winner = "Player";
 		
@@ -542,9 +550,9 @@ void check4LegalMoves(bool player){
 		//numPlayerMoves=0;
 
 		for(int i=0;i<11;i++){ 
-			if((playerPieces[0][i]=='t')&&(playerPieces[1][i]!='x')){ // (x,x) Coordinates for a piece indicates it's dead now.
+			if((playerPieces[0][i]=='t')&&(playerPieces[3][i]!='x')){ // (x,x) Coordinates for a piece indicates it's dead now.
 				tieFighterLegalMoves(player, i);
-			}else if((playerPieces[0][i]== 'x')&&(playerPieces[1][i]!='x')){
+			}else if((playerPieces[0][i]== 'x')&&(playerPieces[3][i]!='x')){
 				xWingLegalMoves(player, i);
 			}
 		}
@@ -552,9 +560,9 @@ void check4LegalMoves(bool player){
 	}else{
 		numComputerMoves=0;
 		for(int i=0;i<11;i++){ 
-			if((computerPieces[0][i]=='T')&&(computerPieces[1][i]!='x')){ // (x,x) Coordinates for a piece indicates it's dead now.
+			if((computerPieces[0][i]=='T')&&(computerPieces[3][i]!='x')){ // (x,x) Coordinates for a piece indicates it's dead now.
 				tieFighterLegalMoves(player, i);
-			}else if((computerPieces[0][i]== 'X')&&(computerPieces[1][i]!='x')){
+			}else if((computerPieces[0][i]== 'X')&&(computerPieces[3][i]!='x')){
 				xWingLegalMoves(player, i);
 			}
 		}
@@ -877,7 +885,7 @@ void listComputerMoves(){
 
 void listPlayerMoves(){
 	cout<<endl<<"Legal Player Moves: ";
-	cout<<endl<<"moves: ";
+	cout<<endl<<"moves: "; 
 	for(int i=0;i<numPlayerMoves;i++){
 		cout<<coordinateToXChar(playerLegalMoves[0][i]);
 		cout<<coordinateToYChar(playerLegalMoves[1][i]);
@@ -1262,100 +1270,123 @@ void initGame() {
 	computerPieces [0][0] = 'T';
 	computerPieces [1][0] = '1'; // X
 	computerPieces [2][0] = '0'; // Y
+	computerPieces [3][0] = ' ';
 
 	computerPieces [0][1] = 'T';
 	computerPieces [1][1] = '2'; // X
 	computerPieces [2][1] = '0'; // Y
+	computerPieces [3][1] = ' ';
 
 	computerPieces [0][2] = 'T';
 	computerPieces [1][2] = '4'; // X
 	computerPieces [2][2] = '0'; // Y
+	computerPieces [3][2] = ' ';
 
 	computerPieces [0][3] = 'T';
 	computerPieces [1][3] = '5'; // X
 	computerPieces [2][3] = '0'; // Y
+	computerPieces [3][3] = ' ';
 
 	// Computer Wall
 	computerPieces [0][4] = '~';
 	computerPieces [1][4] = '2'; // X
 	computerPieces [2][4] = '1'; // Y
+	computerPieces [3][4] = ' ';
 	
 	// Computer Death Star
 	computerPieces [0][5] = '*';
 	computerPieces [1][5] = '3'; // X
 	computerPieces [2][5] = '1'; // Y
+	computerPieces [3][5] = ' ';
 
 	// Computer Wall
 	computerPieces [0][6] = '~';
 	computerPieces [1][6] = '4'; // X
 	computerPieces [2][6] = '1'; // Y
+	computerPieces [3][6] = ' ';
 
 	// Computer X Wing
 	computerPieces [0][7] = 'X';
 	computerPieces [1][7] = '0'; // X
 	computerPieces [2][7] = '2'; // Y
+	computerPieces [3][7] = ' ';
 
 	computerPieces [0][8] = 'X';
 	computerPieces [1][8] = '1'; // X
 	computerPieces [2][8] = '2'; // Y
+	computerPieces [3][8] = ' ';
 
 	computerPieces [0][9] = 'X';
 	computerPieces [1][9] = '5'; // X
 	computerPieces [2][9] = '2'; // Y
+	computerPieces [3][9] = ' ';
 
 	computerPieces [0][10] = 'X';
 	computerPieces [1][10] = '6'; // X
 	computerPieces [2][10] = '2'; // Y
+	computerPieces [3][10] = ' ';
 
 	// Player X-Wing
 	playerPieces [0][0] = 'x';
 	playerPieces [1][0] = '0'; // X
 	playerPieces [2][0] = '4'; // Y
+	playerPieces [3][0] = ' ';
 
 	playerPieces [0][1] = 'x';
 	playerPieces [1][1] = '1'; // X
 	playerPieces [2][1] = '4'; // Y
+	playerPieces [3][1] = ' ';
 
 	playerPieces [0][2] = 'x';
 	playerPieces [1][2] = '5'; // X
 	playerPieces [2][2] = '4'; // Y
+	playerPieces [3][2] = ' ';
 
 	playerPieces [0][3] = 'x';
 	playerPieces [1][3] = '6'; // X
 	playerPieces [2][3] = '4'; // Y
+	playerPieces [3][3] = ' ';
 
 	// Player Wall
 	playerPieces [0][4] = '+';
 	playerPieces [1][4] = '2'; // X
 	playerPieces [2][4] = '5'; // Y
+	playerPieces [3][4] = ' ';
 
 	// Player Death Star
 	playerPieces [0][5] = '@';
 	playerPieces [1][5] = '3'; // X
 	playerPieces [2][5] = '5'; // Y
+	playerPieces [3][5] = ' ';
+	
 
 	// Player Wall
 	playerPieces [0][6] = '+';
 	playerPieces [1][6] = '4'; // X
 	playerPieces [2][6] = '5'; // Y
+	playerPieces [3][6] = ' ';
 
 
 	// Player Tie Fighters 
 	playerPieces [0][7] = 't';
 	playerPieces [1][7] = '1'; // X
 	playerPieces [2][7] = '6'; // Y
+	playerPieces [3][7] = ' ';
 
 	playerPieces [0][8] = 't';
 	playerPieces [1][8] = '2'; // X
 	playerPieces [2][8] = '6'; // Y
+	playerPieces [3][8] = ' ';
 
 	playerPieces [0][9] = 't';
 	playerPieces [1][9] = '4'; // X
 	playerPieces [2][9] = '6'; // Y
+	playerPieces [3][9] = ' ';
 
 	playerPieces [0][10] = 't';
 	playerPieces [1][10] = '5'; // X
 	playerPieces [2][10] = '6'; // Y
+	playerPieces [3][10] = ' ';
 	
 
 	//debugPiecesArrays();
@@ -1380,7 +1411,7 @@ void updateBoardState(){
 		}
 	}
 	for (int b = 0; b < 11; b++) {
-		if(playerPieces[1][b]!='x'){
+		if(playerPieces[3][b]!='x'){ // if 3 = 'x' then the piece is dead
 			xCoordinate=('0' - playerPieces[1][b])*-1;
 			yCoordinate=('0' - playerPieces[2][b])*-1;
 			gameBoard[xCoordinate][yCoordinate] = playerPieces[0][b]; // Piece
@@ -1388,7 +1419,7 @@ void updateBoardState(){
 	}
 	
 	for (int b = 0; b < 11; b++) {
-		if(computerPieces[1][b]!='x'){
+		if(computerPieces[3][b]!='x'){ // if 3 = 'x' then the piece is dead
 			xCoordinate=('0' - computerPieces[1][b])*-1;
 			yCoordinate=('0' - computerPieces[2][b])*-1;
 			gameBoard[xCoordinate][yCoordinate] = computerPieces[0][b]; // Piece
